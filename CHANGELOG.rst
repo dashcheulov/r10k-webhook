@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.0.6 (2019-04-11)
+------------------
+- changed documentation slightly
+
 0.0.5 (2019-04-10)
 ------------------
 - r10k_webhook may accept branch and list of servers as cli args. Also port is parametrized.

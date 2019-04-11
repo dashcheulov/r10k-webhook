@@ -38,6 +38,7 @@ If you don't have errors, proceed with installation of r10k-webhook.
 .. code-block:: bash
 
     pip3 install r10k-webhook
+    systemctl daemon-reload
 
 Enable and start service.
 
