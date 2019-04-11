@@ -1,0 +1,16 @@
+[Unit]
+Description=R10K Webhook Service
+After=syslog.target network.target
+
+[Service]
+User=puppet
+TimeoutStartSec=30
+TimeoutStopSec=60
+Restart=on-failure
+
+ExecStart=/usr/bin/r10k_daemon -c /etc/r10k_webhook/config.json
+
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target

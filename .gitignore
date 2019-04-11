@@ -1,0 +1,8 @@
+venv
+r10kwebhook/__pycache__
+.idea
+.pytest_cache
+.eggs
+build
+dist
+r10k_webhook.egg-info
