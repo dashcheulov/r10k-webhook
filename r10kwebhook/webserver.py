@@ -107,39 +107,42 @@ class WebServer(Thread):
             - address: socket address from accept()
         """
         PACKET_SIZE = 1024
-        while True:
-            logger.debug("CLIENT %s", client)
-            data = client.recv(PACKET_SIZE).decode()  # Recieve data packet from client and decode
+        logger.debug("CLIENT %s", client)
+        data = packet = client.recv(PACKET_SIZE)  # Recieve data packet from client
+        while len(packet) == PACKET_SIZE:
+            packet = client.recv(PACKET_SIZE)  # Recieve data packet from client
+            data += packet
+        data = data.decode()
 
-            if not data: break
+        if not data: return
 
-            request_method = data.split(' ')[0]
-            logger.debug("Method: {m}".format(m=request_method))
-            logger.debug("Request Body: {b}".format(b=data))
+        request_method = data.split(' ')[0]
+        logger.debug("Method: {m}".format(m=request_method))
+        logger.debug("Request Body: {b}".format(b=data))
 
-            if request_method in ('GET', 'POST'):
-                path = data.split(' ')[1]
-                if path in self._handlers:
-                    data = data.split('\r\n\r\n')[1]
-                    if data:
-                        try:
-                            data = json.loads(data)
-                        except Exception as err:
-                            logger.exception(err)
-                            client.send(self._generate_headers(406))
-                            client.close()
-                            break
+        if request_method in ('GET', 'POST'):
+            path = data.split(' ')[1]
+            if path in self._handlers:
+                data = data.split('\r\n\r\n')[1]
+                if data:
                     try:
-                        response_data = self._handlers[path](data).encode()
+                        data = json.loads(data)
                     except Exception as err:
                         logger.exception(err)
-                        response = self._generate_headers(500)
-                    else:
-                        response = self._generate_headers(200) + response_data
+                        client.send(self._generate_headers(406))
+                        client.close()
+                        return
+                try:
+                    response_data = self._handlers[path](data).encode()
+                except Exception as err:
+                    logger.exception(err)
+                    response = self._generate_headers(500)
                 else:
-                    response = self._generate_headers(404) + 'not found'.encode()
-                client.send(response)
-                client.close()
-                break
+                    response = self._generate_headers(200) + response_data
             else:
-                logger.debug("Unknown HTTP request method: {method}".format(method=request_method))
+                response = self._generate_headers(404) + 'not found'.encode()
+            client.send(response)
+            client.close()
+            return
+        else:
+            logger.debug("Unknown HTTP request method: {method}".format(method=request_method))

@@ -110,12 +110,13 @@ Create '/etc/r10k_webhook/config.json' and put there parameters.
 - **allowed_branches** *default: '.\*'* - Regexp by which name of a branch is filtered. A branch will be deployed if matches regexp.
 - **flush_env_cache** *default: true* - Determines whether send command flushing an environment's cache via puppet api after r10k run.
 - **generate_types** *default: true* - Determines whether launch command '`puppet generate types <env> <https://puppet.com/docs/puppet/5.5/environment_isolation.html>`_' after r10k run.
+- **initial_deployment** *default: true* - Deployment all environments on start.
 - **r10k_path**: *default: 'r10k'* - Path to r10k binary
 - **puppet_path**: *default: '/opt/puppetlabs/bin/puppet'* - Path to puppet binary
 - **r10k_tmpcfg**: *default: '/tmp/r10k.yaml'* - Path to modified configuration yaml file of r10k being created and used by wrapper.
 - **r10k_args**: *default: '-v'* - String with arguments are passed to r10k at every execution. Spaces are not allowed there.
 - **r10k_config_path**: *default: '/etc/puppetlabs/r10k/r10k.yaml'* - Path to configuration yaml file of r10k.
-- **puppet_api_uri** *default: 'https://localhost:8139/puppet-admin-api/v1'* - URI is called to flush cache of an environment.
+- **puppet_api_uri** *default: 'https://localhost:8140/puppet-admin-api/v1'* - URI is called to flush cache of an environment.
 
 Service r10k-webhook has to be restarted in order to apply changes of config::
 

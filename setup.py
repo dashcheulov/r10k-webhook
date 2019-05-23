@@ -7,7 +7,7 @@ with open(path.join(here, 'README.rst')) as f:
 
 setup(
     name='r10k-webhook',
-    version='0.0.6',
+    version='0.1.0',
     description='Wrapper for r10k',
     url='https://github.com/dashcheulov/r10k-webhook',
     long_description=long_description,

@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.1.0 (2019-05-23)
+------------------
+- added possibility of deploying all environments on start what controlled by parameter 'initial_deployment'.
+- remove limit of message size in webserver
+- changed default port of puppet api
+
 0.0.6 (2019-04-11)
 ------------------
 - changed documentation slightly

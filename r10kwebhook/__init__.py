@@ -100,8 +100,8 @@ class R10k(object):
             with open(self._r10_cfgpath, 'w') as f:
                 f.write(yaml.safe_dump(config))
 
-    def deploy_env(self, name):
-        if name in self._env_shelf:
+    def deploy_env(self, name='*'):
+        if name in self._env_shelf or '*' in self._env_shelf:
             logger.warning('Requested to deploy branch %s. But it is already in queue.', name)
             return 'wait'
         self._env_shelf.add(name)
@@ -109,20 +109,22 @@ class R10k(object):
         with self._lock:
             self._env_shelf.remove(name)
             logger.info('Deploying branch %s.', name)
-            self.last_run_state = 'err' if self._exec_cmd(
-                [self.bin, 'deploy', 'environment', name] + self.args) != 0 else 'ok'
+            cmd = [self.bin, 'deploy', 'environment'] if name == '*' else [self.bin, 'deploy', 'environment', name]
+            self.last_run_state = 'err' if self._exec_cmd(cmd + self.args) != 0 else 'ok'
             if self.last_run_state == 'ok':
-                basedir, env = self._sync_dirs()[name]
-                if self.generate_types:  # https://puppet.com/docs/puppet/5.5/environment_isolation.html
-                    logger.info('Generating types for environment \'%s\'.', env)
-                    if self._exec_cmd(
-                            (self.puppet_bin, 'generate', 'types', '--environment', env, '--codedir',
-                             os.path.dirname(basedir))) != 0:
-                        self.last_run_state = 'err'
-                if self.puppet_api:
-                    logger.info('Flushing cache of environment %s. %s', env, urlopen(
-                        Request('{}/environment-cache?{}'.format(self.puppet_api, urlencode({'environment': env})),
-                                method='DELETE'), context=ssl._create_unverified_context()).read().decode())
+                sync_output = self._sync_dirs()
+                pack = [val for key, val in sync_output.items()] if name == '*' else [sync_output[name]]
+                for basedir, env in pack:
+                    if self.generate_types:  # https://puppet.com/docs/puppet/5.5/environment_isolation.html
+                        logger.info('Generating types for environment \'%s\'.', env)
+                        if self._exec_cmd(
+                                (self.puppet_bin, 'generate', 'types', '--environment', env, '--codedir',
+                                os.path.dirname(basedir))) != 0:
+                            self.last_run_state = 'err'
+                    if self.puppet_api:
+                        logger.info('Flushing cache of environment %s. %s', env, urlopen(
+                            Request('{}/environment-cache?{}'.format(self.puppet_api, urlencode({'environment': env})),
+                                    method='DELETE'), context=ssl._create_unverified_context()).read().decode())
         return self.last_run_state
 
     def _rename_branch(self, name, prefix=None):
@@ -232,7 +234,8 @@ class App(object):
             'branch_to_env_map': dict(),
             'generate_types': True,
             'flush_env_cache': True,
-            'puppet_api_uri': 'https://localhost:8139/puppet-admin-api/v1'
+            'initial_deployment': True,
+            'puppet_api_uri': 'https://localhost:8140/puppet-admin-api/v1'
         })
         self.metrics = {'requests': {'rejected': 0, 'accepted': 0}, 'r10k': {'hits': 0, 'errors': 0}}
         self._r10k = R10k(self.config)
@@ -240,6 +243,9 @@ class App(object):
         self._webserver.register_handlers(self)
         if isinstance(self.config.allowed_branches, str):
             self.config.allowed_branches = re.compile(self.config.allowed_branches)
+        if self.config.initial_deployment:
+            if self._r10k.deploy_env() == 'err':
+                self.metrics['r10k']['errors'] += 1
 
     @staticmethod
     def flat_dict(_dict, pkey=''):

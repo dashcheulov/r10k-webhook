@@ -6,3 +6,4 @@ r10kwebhook/__pycache__
 build
 dist
 r10k_webhook.egg-info
+.vscode/settings.json
