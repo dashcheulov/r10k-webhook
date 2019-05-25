@@ -1,9 +1,13 @@
 Changelog
 =========
 
+0.1.1 (2019-05-25)
+------------------
+- an environment directory may be deleted if parameter `override_environment_directories` is set.
+
 0.1.0 (2019-05-23)
 ------------------
-- added possibility of deploying all environments on start what controlled by parameter 'initial_deployment'.
+- added possibility of deploying all environments on start what controlled by parameter `initial_deployment`.
 - remove limit of message size in webserver
 - changed default port of puppet api
 

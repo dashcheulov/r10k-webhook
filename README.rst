@@ -111,6 +111,7 @@ Create '/etc/r10k_webhook/config.json' and put there parameters.
 - **flush_env_cache** *default: true* - Determines whether send command flushing an environment's cache via puppet api after r10k run.
 - **generate_types** *default: true* - Determines whether launch command '`puppet generate types <env> <https://puppet.com/docs/puppet/5.5/environment_isolation.html>`_' after r10k run.
 - **initial_deployment** *default: true* - Deployment all environments on start.
+- **override_environment_directories** *default: false* - Removes existent directory of environment before deployment.
 - **r10k_path**: *default: 'r10k'* - Path to r10k binary
 - **puppet_path**: *default: '/opt/puppetlabs/bin/puppet'* - Path to puppet binary
 - **r10k_tmpcfg**: *default: '/tmp/r10k.yaml'* - Path to modified configuration yaml file of r10k being created and used by wrapper.

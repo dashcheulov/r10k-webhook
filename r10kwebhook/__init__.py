@@ -6,6 +6,7 @@ import time
 import logging
 import subprocess
 import json
+import shutil
 import re
 from copy import deepcopy
 import ssl
@@ -88,6 +89,7 @@ class R10k(object):
         self.basedirs = dict()
         self.branch_to_env_map = settings.branch_to_env_map
         self.puppet_api = settings.puppet_api_uri if settings.flush_env_cache else None
+        self.override_env = settings.override_environment_directories
 
     def set_config(self):
         if not os.path.isfile(self._r10_cfgpath):
@@ -160,6 +162,9 @@ class R10k(object):
             for src, dst in dir_map.items():
                 if not os.path.islink(os.path.join(*dst)):
                     abs_src, abs_dst = os.path.join(tmp_basedir, src), os.path.join(*dst)
+                    if self.override_env and os.path.isdir(abs_dst):
+                        logger.warning('Removing directory %s', abs_dst)
+                        shutil.rmtree(abs_dst)
                     logger.info('Adding symlink from %s to %s', abs_src, abs_dst)
                     os.symlink(abs_src, abs_dst, True)
         return renaming_map
@@ -235,6 +240,7 @@ class App(object):
             'generate_types': True,
             'flush_env_cache': True,
             'initial_deployment': True,
+            'override_environment_directories': False,
             'puppet_api_uri': 'https://localhost:8140/puppet-admin-api/v1'
         })
         self.metrics = {'requests': {'rejected': 0, 'accepted': 0}, 'r10k': {'hits': 0, 'errors': 0}}
